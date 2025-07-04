@@ -47,28 +47,29 @@
   </style>
 </head>
 <body>
-  <img src="https://evgrandiose.fr/wp-content/uploads/2025/07/LOGO-17.png" alt="Logo EV Grandiose" class="logo">
+  <img src="https://evgrandiose.fr/wp-content/uploads/2025/07/LOGO-17.png" alt="Logo EV Grandiose" class="logo" />
   <h1>Paiement sécurisé</h1>
   <p>Accompagnement 4 séances – 600 €</p>
   <div class="container">
     <form id="payment-form">
-<input type="text" id="name" name="name" placeholder="Votre nom complet" required />
-  <input type="email" id="email" name="email" placeholder="Votre email" required />
+      <input type="text" id="name" name="name" placeholder="Votre nom complet" required />
+      <input type="email" id="email" name="email" placeholder="Votre email" required />
       <div id="payment-element"></div>
       <button id="submit">Payer 600 €</button>
     </form>
-    <p>Paiement 100 % sécurisé via Stripe.<br>Vous recevrez un email de confirmation.</p>
+    <p>Paiement 100 % sécurisé via Stripe.<br />Vous recevrez un email de confirmation.</p>
   </div>
 
   <script>
     const stripe = Stripe("pk_live_51MMqMKE6bw1rCi3S5g55yeII1xcJ75DnmRwYQBqxUTzN8yiuyl7D7gfaSXIBWwRYX2n23L9EyWdIhpL0WFYfZ3ib009gI7DcwD");
     let elements;
 
- const form = document.getElementById("payment-form");
+    const form = document.getElementById("payment-form");
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
+      // Récupère et valide nom et email
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
 
@@ -77,7 +78,7 @@
         return;
       }
 
-      // Crée le PaymentIntent en envoyant name et email au backend
+      // Appelle le backend pour créer le PaymentIntent
       const response = await fetch("/create-payment-intent-600", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -91,14 +92,14 @@
 
       const { clientSecret } = await response.json();
 
-      // Initialise Stripe Elements avec clientSecret (uniquement une fois)
+      // Initialise Stripe Elements (une seule fois)
       if (!elements) {
         elements = stripe.elements({ clientSecret });
         const paymentElement = elements.create("payment");
         paymentElement.mount("#payment-element");
       }
 
-      // Confirme le paiement et déclenche la redirection automatique vers ta page de confirmation
+      // Confirme le paiement et déclenche la redirection automatique
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -109,6 +110,5 @@
       if (error) alert(error.message);
     });
   </script>
-
 </body>
 </html>
