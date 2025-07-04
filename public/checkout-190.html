@@ -5,52 +5,53 @@
   <title>Paiement sécurisé</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://js.stripe.com/v3/"></script>
-  <style>
-    body {
-      font-family: 'Source Sans Pro', sans-serif;
-      background-color: #fefeee;
-      color: #2e2e2e;
-      text-align: center;
-      padding: 40px 20px;
-    }
-    .container {
-      background: #fff;
-      padding: 40px 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
-      max-width: 500px;
-      margin: 40px auto;
-    }
-    #payment-form {
-      margin-top: 20px;
-    }
-    #payment-element-container {
-      display: none;
-      margin-top: 20px;
-    }
-    button {
-      background-color: #f39453;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #d67b3c;
-    }
-    .logo {
-      max-height: 120px;
-      margin-bottom: 10px;
-    }
-    .instructions {
-      font-style: italic;
-      margin-bottom: 20px;
-      color: #555;
-    }
-  </style>
+ <style>
+  body {
+    font-family: 'Source Sans Pro', sans-serif;
+    background-color: #fefeee;
+    color: #2e2e2e;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .container {
+    background: #fff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+    max-width: 500px;
+    margin: 40px auto;
+  }
+  #payment-form {
+    margin-top: 20px;
+  }
+  #payment-element-container {
+    display: none;
+    margin-top: 20px;
+  }
+  button {
+    background-color: #f39453;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 15px; /* <-- espace ajouté */
+  }
+  button:hover {
+    background-color: #d67b3c;
+  }
+  .logo {
+    max-height: 120px;
+    margin-bottom: 10px;
+  }
+  .instructions {
+    font-style: italic;
+    margin-bottom: 20px;
+    color: #555;
+  }
+</style>
 </head>
 <body>
   <img src="https://evgrandiose.fr/wp-content/uploads/2025/07/LOGO-17.png" alt="Logo EV Grandiose" class="logo">
