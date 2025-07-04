@@ -53,46 +53,38 @@
 
   <div class="container">
     <form id="payment-form">
-      <div id="card-element"></div>
+      <div id="payment-element"></div>
       <button id="submit">Payer 190 €</button>
     </form>
     <p>Paiement 100 % sécurisé via Stripe.<br>Vous recevrez un email de confirmation.</p>
   </div>
 
   <script>
-  const stripe = Stripe("pk_live_51MMqMKE6bw1rCi3S5g55yeII1xcJ75DnmRwYQBqxUTzN8yiuyl7D7gfaSXIBWwRYX2n23L9EyWdIhpL0WFYfZ3ib009gI7DcwD");
+    const stripe = Stripe("pk_live_51MMqMKE6bw1rCi3S5g55yeII1xcJ75DnmRwYQBqxUTzN8yiuyl7D7gfaSXIBWwRYX2n23L9EyWdIhpL0WFYfZ3ib009gI7DcwD");
+    let elements;
 
-  let elements;
+    fetch("/create-payment-intent-190", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((res) => res.json())
+      .then(({ clientSecret }) => {
+        elements = stripe.elements({ clientSecret });
+        const paymentElement = elements.create("payment");
+        paymentElement.mount("#payment-element");
+      });
 
-  fetch("/create-payment-intent-190", {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
-  })
-  .then(res => res.json())
-  .then(({ clientSecret }) => {
-    elements = stripe.elements({ clientSecret });
-
-    // Crée le Payment Element (tous moyens de paiement)
-    const paymentElement = elements.create("payment");
-    paymentElement.mount("#payment-element");
-
-    const form = document.getElementById('payment-form');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      // Confirme le paiement en utilisant le clientSecret et le Payment Element
+    const form = document.getElementById("payment-form");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: "https://www.evgrandiose.fr/confirmation-coaching"
-        }
+          return_url: "https://www.evgrandiose.fr/confirmation-coaching",
+        },
       });
-
-      if (error) {
-        alert('Erreur : ' + error.message);
-      }
+      if (error) alert(error.message);
     });
-  });
-</script>
+  </script>
 </body>
 </html>
