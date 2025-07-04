@@ -52,6 +52,8 @@
   <p>Accompagnement 4 séances – 600 €</p>
   <div class="container">
     <form id="payment-form">
+<input type="text" id="name" name="name" placeholder="Votre nom complet" required />
+  <input type="email" id="email" name="email" placeholder="Votre email" required />
       <div id="payment-element"></div>
       <button id="submit">Payer 600 €</button>
     </form>
@@ -62,28 +64,51 @@
     const stripe = Stripe("pk_live_51MMqMKE6bw1rCi3S5g55yeII1xcJ75DnmRwYQBqxUTzN8yiuyl7D7gfaSXIBWwRYX2n23L9EyWdIhpL0WFYfZ3ib009gI7DcwD");
     let elements;
 
-    fetch("/create-payment-intent-600", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => res.json())
-      .then(({ clientSecret }) => {
+ const form = document.getElementById("payment-form");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+
+      if (!name || !email) {
+        alert("Merci de renseigner votre nom complet et votre email.");
+        return;
+      }
+
+      // Crée le PaymentIntent en envoyant name et email au backend
+      const response = await fetch("/create-payment-intent-600", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email }),
+      });
+
+      if (!response.ok) {
+        alert("Une erreur est survenue lors de la création du paiement.");
+        return;
+      }
+
+      const { clientSecret } = await response.json();
+
+      // Initialise Stripe Elements avec clientSecret (uniquement une fois)
+      if (!elements) {
         elements = stripe.elements({ clientSecret });
         const paymentElement = elements.create("payment");
         paymentElement.mount("#payment-element");
-      });
+      }
 
-    const form = document.getElementById("payment-form");
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
+      // Confirme le paiement et déclenche la redirection automatique vers ta page de confirmation
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           return_url: "https://www.evgrandiose.fr/confirmation-accompagnement",
         },
       });
+
       if (error) alert(error.message);
     });
   </script>
+
 </body>
 </html>
