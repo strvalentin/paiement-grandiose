@@ -109,7 +109,14 @@
         const { clientSecret } = await response.json();
 
         elements = stripe.elements({ clientSecret });
-        paymentElement = elements.create("payment");
+        paymentElement = elements.create("payment", {
+  defaultValues: {
+    billingDetails: {
+      name: name,
+      email: email
+    },
+  },
+});
         paymentElement.mount("#payment-element");
 
         paymentElementMounted = true;
