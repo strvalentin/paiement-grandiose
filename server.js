@@ -19,9 +19,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Paiement 190€
 app.post('/create-payment-intent-190', async (req, res) => {
   try {
-    const { name, email } = req.body;  // <-- récupère le nom et l'email envoyés depuis le frontend
+    const { name, email } = req.body;
 
-    const amount = 19000;
+    const amount = 19000; // en centimes
     const commissionPercent = 41;
     const platformFee = Math.round(amount * commissionPercent / 100);
 
@@ -32,9 +32,9 @@ app.post('/create-payment-intent-190', async (req, res) => {
       automatic_payment_methods: { enabled: true },
       transfer_data: { destination: 'acct_1RdG6aE3ESlhRSpw' },
       application_fee_amount: platformFee,
-      receipt_email: email,            // <-- envoie la facture à cet email
-      metadata: { customer_name: name }, // <-- ajoute le nom dans les métadonnées
-      payment_method_data: { billing_details: { name, email } }, // <-- renseigne les détails facturation
+      receipt_email: email,
+      metadata: { customer_name: name },
+      payment_method_data: { billing_details: { name, email } },
     });
 
     console.log('✅ PaymentIntent 190€ OK');
@@ -50,7 +50,7 @@ app.post('/create-payment-intent-600', async (req, res) => {
   try {
     const { name, email } = req.body;
 
-    const amount = 60000;
+    const amount = 60000; // en centimes
     const commissionPercent = 41;
     const platformFee = Math.round(amount * commissionPercent / 100);
 
