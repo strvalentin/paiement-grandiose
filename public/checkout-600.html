@@ -2,111 +2,51 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Paiement sécurisé – Accompagnement 4 séances</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://js.stripe.com/v3/"></script>
   <style>
-    body {
-      font-family: 'Source Sans Pro', sans-serif;
-      background-color: #fefeee;
-      color: #2e2e2e;
-      text-align: center;
-      padding: 40px 20px;
-    }
-    .container {
-      background: #fff;
-      padding: 40px 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
-      max-width: 500px;
-      margin: 40px auto;
-    }
-    #payment-form {
-      margin-top: 20px;
-    }
-    #payment-element {
-      margin-bottom: 20px;
-    }
-    button {
-      background-color: #f39453;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #d67b3c;
-    }
-    .logo {
-      max-height: 120px;
-      margin-bottom: 20px;
-    }
+    /* Ton CSS habituel ici */
   </style>
 </head>
 <body>
-  <img src="https://evgrandiose.fr/wp-content/uploads/2025/07/LOGO-17.png" alt="Logo EV Grandiose" class="logo" />
+  <img src="https://evgrandiose.fr/wp-content/uploads/2025/07/LOGO-17.png" alt="Logo EV Grandiose" class="logo">
   <h1>Paiement sécurisé</h1>
   <p>Accompagnement 4 séances – 600 €</p>
   <div class="container">
     <form id="payment-form">
-      <input type="text" id="name" name="name" placeholder="Votre nom complet" required />
-      <input type="email" id="email" name="email" placeholder="Votre email" required />
       <div id="payment-element"></div>
       <button id="submit">Payer 600 €</button>
     </form>
-    <p>Paiement 100 % sécurisé via Stripe.<br />Vous recevrez un email de confirmation.</p>
+    <p>Paiement 100 % sécurisé via Stripe.<br>Vous recevrez un email de confirmation.</p>
   </div>
 
   <script>
     const stripe = Stripe("pk_live_51MMqMKE6bw1rCi3S5g55yeII1xcJ75DnmRwYQBqxUTzN8yiuyl7D7gfaSXIBWwRYX2n23L9EyWdIhpL0WFYfZ3ib009gI7DcwD");
     let elements;
 
-    const form = document.getElementById("payment-form");
+    fetch("/create-payment-intent-600", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+    .then((res) => res.json())
+    .then(({ clientSecret }) => {
+      elements = stripe.elements({ clientSecret });
+      const paymentElement = elements.create("payment");
+      paymentElement.mount("#payment-element");
+    });
 
+    const form = document.getElementById("payment-form");
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      // Récupère et valide nom et email
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-
-      if (!name || !email) {
-        alert("Merci de renseigner votre nom complet et votre email.");
-        return;
-      }
-
-      // Appelle le backend pour créer le PaymentIntent
-      const response = await fetch("/create-payment-intent-600", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email }),
-      });
-
-      if (!response.ok) {
-        alert("Une erreur est survenue lors de la création du paiement.");
-        return;
-      }
-
-      const { clientSecret } = await response.json();
-
-      // Initialise Stripe Elements (une seule fois)
-      if (!elements) {
-        elements = stripe.elements({ clientSecret });
-        const paymentElement = elements.create("payment");
-        paymentElement.mount("#payment-element");
-      }
-
-      // Confirme le paiement et déclenche la redirection automatique
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: "https://www.evgrandiose.fr/confirmation-accompagnement",
+          // Redirection corrigée vers ta page système.io
+          return_url: "https://evgrandiose.systeme.io/confirmation-accompagnement",
         },
       });
-
       if (error) alert(error.message);
     });
   </script>
