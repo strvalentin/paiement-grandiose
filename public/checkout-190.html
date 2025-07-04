@@ -1,1 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Paiement Coaching 190€</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    button { padding: 1rem; font-size: 1rem; }
+    #payment-message { color: green; }
+    #error-message { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Coaching à 190€ avec Lana</h1>
+  <form id="payment-form">
+    <div id="payment-element"><!--Stripe.js injects the Payment Element--></div>
+    <button id="submit">Payer 190€</button>
+    <div id="payment-message" role="alert"></div>
+    <div id="error-message" role="alert"></div>
+  </form>
+
+  <script>
+    const stripe = Stripe("pk_test_TA_CLE_PUBLIQUE"); // Remplace par ta clé publique Stripe
+    const options = {
+      clientSecret: null,
+      appearance: {
+        theme: 'stripe'
+      }
+    };
+
+    async function initialize() {
+      const response = await fetch("/create-payment-intent-190", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+      const { clientSecret } = await response.json();
+      options.clientSecret = clientSecret;
+      const elements = stripe.elements(options);
+      const paymentElement = elements.create("payment");
+      paymentElement.mount("#payment-element");
+
+      const form = document.getElementById("payment-form");
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        document.getElementById("submit").disabled = true;
+        const { error } = await stripe.confirmPayment({
+          elements,
+          confirmParams: { return_url: "https://evgrandiose.fr/confirmation-coaching" }
+        });
+        if (error) {
+          document.getElementById("error-message").textContent = error.message;
+          document.getElementById("submit").disabled = false;
+        }
+      });
+    }
+
+    initialize();
+  </script>
+</body>
+</html>
 
