@@ -24,8 +24,9 @@
     #payment-form {
       margin-top: 20px;
     }
-    #card-element {
-      margin-bottom: 20px;
+    #payment-element-container {
+      display: none;
+      margin-top: 20px;
     }
     button {
       background-color: #f39453;
@@ -42,12 +43,18 @@
     }
     .logo {
       max-height: 120px;
+      margin-bottom: 10px;
+    }
+    .instructions {
+      font-style: italic;
       margin-bottom: 20px;
+      color: #555;
     }
   </style>
 </head>
 <body>
   <img src="https://evgrandiose.fr/wp-content/uploads/2025/07/LOGO-17.png" alt="Logo EV Grandiose" class="logo">
+  <p class="instructions">Merci de remplir votre nom complet et votre email, puis cliquez sur "Payer 190 €" pour saisir vos informations de paiement.</p>
   <h1>Paiement sécurisé</h1>
   <p>Coaching individuel – 190 €</p>
 
@@ -55,7 +62,11 @@
     <form id="payment-form">
       <input type="text" id="name" name="name" placeholder="Votre nom complet" required />
       <input type="email" id="email" name="email" placeholder="Votre email" required />
-      <div id="card-element"><!-- Stripe Element carte bancaire ici --></div>
+
+      <div id="payment-element-container">
+        <div id="payment-element"></div>
+      </div>
+
       <button id="submit">Payer 190 €</button>
     </form>
     <p>Paiement 100 % sécurisé via Stripe.<br>Vous recevrez un email de confirmation.</p>
@@ -63,53 +74,57 @@
 
   <script>
     const stripe = Stripe("pk_live_51MMqMKE6bw1rCi3S5g55yeII1xcJ75DnmRwYQBqxUTzN8yiuyl7D7gfaSXIBWwRYX2n23L9EyWdIhpL0WFYfZ3ib009gI7DcwD");
-    let elements = null;
-    let card = null;
-
-    async function initialize() {
-      const response = await fetch("/create-payment-intent-190", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: document.getElementById("name").value,
-          email: document.getElementById("email").value,
-        }),
-      });
-      const { clientSecret } = await response.json();
-
-      elements = stripe.elements({ clientSecret });
-      card = elements.create("card");
-      card.mount("#card-element");
-    }
+    let elements;
+    let paymentElement;
+    let paymentElementMounted = false;
 
     const form = document.getElementById("payment-form");
+    const paymentContainer = document.getElementById("payment-element-container");
+
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
+
       if (!name || !email) {
         alert("Merci de renseigner votre nom complet et votre email.");
         return;
       }
 
-      if (!elements) {
-        await initialize();
+      if (!paymentElementMounted) {
+        // Crée le PaymentIntent côté backend et récupère le clientSecret
+        const response = await fetch("/create-payment-intent-190", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email }),
+        });
+
+        if (!response.ok) {
+          alert("Une erreur est survenue, merci de réessayer.");
+          return;
+        }
+
+        const { clientSecret } = await response.json();
+
+        elements = stripe.elements({ clientSecret });
+        paymentElement = elements.create("payment");
+        paymentElement.mount("#payment-element");
+
+        paymentElementMounted = true;
+        paymentContainer.style.display = "block";
+        return; // Laisse l’utilisateur saisir ses infos de paiement
       }
 
-      const { error } = await stripe.confirmCardPayment(elements._secret, {
-        payment_method: {
-          card: card,
-          billing_details: { name, email },
+      // Confirme le paiement et déclenche la redirection automatique
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: "https://www.evgrandiose.fr/confirmation-coaching",
         },
       });
 
-      if (error) {
-        alert(error.message);
-      } else {
-        // Redirection après paiement réussi
-        window.location.href = "https://www.evgrandiose.fr/confirmation-coaching";
-      }
+      if (error) alert(error.message);
     });
   </script>
 </body>
