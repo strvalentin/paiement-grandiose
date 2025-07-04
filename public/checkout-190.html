@@ -6,7 +6,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://js.stripe.com/v3/"></script>
   <style>
-    /* Ton CSS habituel ici */
+    body {
+      font-family: 'Source Sans Pro', sans-serif;
+      background-color: #fefeee;
+      color: #2e2e2e;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .container {
+      background: #fff;
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+      max-width: 500px;
+      margin: 40px auto;
+    }
+    #payment-form {
+      margin-top: 20px;
+    }
+    #card-element {
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #f39453;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #d67b3c;
+    }
+    .logo {
+      max-height: 120px;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
@@ -16,7 +53,9 @@
 
   <div class="container">
     <form id="payment-form">
-      <div id="payment-element"></div>
+      <input type="text" id="name" name="name" placeholder="Votre nom complet" required />
+      <input type="email" id="email" name="email" placeholder="Votre email" required />
+      <div id="card-element"><!-- Stripe Element carte bancaire ici --></div>
       <button id="submit">Payer 190 €</button>
     </form>
     <p>Paiement 100 % sécurisé via Stripe.<br>Vous recevrez un email de confirmation.</p>
@@ -24,31 +63,53 @@
 
   <script>
     const stripe = Stripe("pk_live_51MMqMKE6bw1rCi3S5g55yeII1xcJ75DnmRwYQBqxUTzN8yiuyl7D7gfaSXIBWwRYX2n23L9EyWdIhpL0WFYfZ3ib009gI7DcwD");
-    let elements;
+    let elements = null;
+    let card = null;
 
-    fetch("/create-payment-intent-190", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    })
-    .then((res) => res.json())
-    .then(({ clientSecret }) => {
+    async function initialize() {
+      const response = await fetch("/create-payment-intent-190", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: document.getElementById("name").value,
+          email: document.getElementById("email").value,
+        }),
+      });
+      const { clientSecret } = await response.json();
+
       elements = stripe.elements({ clientSecret });
-      const paymentElement = elements.create("payment");
-      paymentElement.mount("#payment-element");
-    });
+      card = elements.create("card");
+      card.mount("#card-element");
+    }
 
     const form = document.getElementById("payment-form");
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      const { error } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          // Redirection corrigée vers ta page système.io
-          return_url: "https://evgrandiose.systeme.io/confirmation-coaching",
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      if (!name || !email) {
+        alert("Merci de renseigner votre nom complet et votre email.");
+        return;
+      }
+
+      if (!elements) {
+        await initialize();
+      }
+
+      const { error } = await stripe.confirmCardPayment(elements._secret, {
+        payment_method: {
+          card: card,
+          billing_details: { name, email },
         },
       });
-      if (error) alert(error.message);
+
+      if (error) {
+        alert(error.message);
+      } else {
+        // Redirection après paiement réussi
+        window.location.href = "https://www.evgrandiose.fr/confirmation-coaching";
+      }
     });
   </script>
 </body>
