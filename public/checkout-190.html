@@ -2,86 +2,53 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Paiement sécurisé 190€</title>
+  <title>Paiement sécurisé</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://js.stripe.com/v3/"></script>
   <style>
-    /* Ton style ici */
+    /* Ton CSS habituel ici */
   </style>
 </head>
 <body>
-  <h1>Paiement sécurisé – Coaching 190 €</h1>
+  <img src="https://evgrandiose.fr/wp-content/uploads/2025/07/LOGO-17.png" alt="Logo EV Grandiose" class="logo">
+  <h1>Paiement sécurisé</h1>
+  <p>Coaching individuel – 190 €</p>
 
-  <form id="payment-form">
-    <input type="text" id="name" placeholder="Votre nom complet" required />
-    <input type="email" id="email" placeholder="Votre email" required />
-    <div id="payment-element"></div>
-    <button type="submit">Payer 190 €</button>
-  </form>
+  <div class="container">
+    <form id="payment-form">
+      <div id="payment-element"></div>
+      <button id="submit">Payer 190 €</button>
+    </form>
+    <p>Paiement 100 % sécurisé via Stripe.<br>Vous recevrez un email de confirmation.</p>
+  </div>
 
   <script>
-    const stripe = Stripe('pk_live_...'); // ta clé publique Stripe
+    const stripe = Stripe("pk_live_51MMqMKE6bw1rCi3S5g55yeII1xcJ75DnmRwYQBqxUTzN8yiuyl7D7gfaSXIBWwRYX2n23L9EyWdIhpL0WFYfZ3ib009gI7DcwD");
     let elements;
-    let paymentElement;
 
-    const form = document.getElementById('payment-form');
+    fetch("/create-payment-intent-190", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+    .then((res) => res.json())
+    .then(({ clientSecret }) => {
+      elements = stripe.elements({ clientSecret });
+      const paymentElement = elements.create("payment");
+      paymentElement.mount("#payment-element");
+    });
 
-    // Fonction pour créer PaymentIntent ET afficher PaymentElement
-    async function initializePayment() {
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-
-      if (!name || !email) {
-        alert('Merci de renseigner votre nom complet et votre email.');
-        return false;
-      }
-
-      const res = await fetch('/create-payment-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          email,
-          amount: 19000,
-          description: 'Coaching 190€ avec Lana'
-        }),
-      });
-
-      if (!res.ok) {
-        alert('Erreur lors de la création du paiement. Merci de réessayer.');
-        return false;
-      }
-
-      const { clientSecret } = await res.json();
-
-      if (!elements) {
-        elements = stripe.elements({ clientSecret });
-        paymentElement = elements.create('payment');
-        paymentElement.mount('#payment-element');
-      }
-
-      return true;
-    }
-
-    form.addEventListener('submit', async (event) => {
+    const form = document.getElementById("payment-form");
+    form.addEventListener("submit", async (event) => {
       event.preventDefault();
-
-      // Si PaymentElement pas encore affiché, on l'initialise avant de tenter confirmation
-      if (!paymentElement) {
-        const ready = await initializePayment();
-        if (!ready) return;
-      }
 
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: 'https://www.evgrandiose.fr/confirmation-coaching',
+          // Redirection corrigée vers ta page système.io
+          return_url: "https://evgrandiose.systeme.io/confirmation-coaching",
         },
       });
-
-      if (error) {
-        alert(error.message);
-      }
+      if (error) alert(error.message);
     });
   </script>
 </body>
