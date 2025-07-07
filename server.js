@@ -5,7 +5,7 @@ const path = require('path');
 
 const app = express();
 
-// Autorise les requêtes depuis ton domaine
+// Autoriser les requêtes depuis ton domaine
 app.use(cors({
   origin: 'https://evgrandiose.fr',
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -17,15 +17,12 @@ app.use(express.json());
 // Sert les fichiers HTML depuis le dossier /public
 app.use(express.static(path.join(__dirname, 'public')));
 
-//
-// 🔶 Paiement coaching 1h – 190 €
-//
+// Paiement coaching 190 €
 app.post('/create-payment-intent-190', async (req, res) => {
   try {
     const { firstname, lastname, email, address, zipcode, city } = req.body;
-    const fullName = `${firstname} ${lastname}`;
 
-    const amount = 19000; // en centimes
+    const amount = 19000;
     const commissionPercent = 41;
     const platformFee = Math.round(amount * commissionPercent / 100);
 
@@ -34,13 +31,13 @@ app.post('/create-payment-intent-190', async (req, res) => {
       currency: 'eur',
       description: 'Coaching 190€ avec Lana',
       automatic_payment_methods: { enabled: true },
-      transfer_data: {
-        destination: 'acct_1RdG6aE3ESlhRSpw',
-      },
+      transfer_data: { destination: 'acct_1RdG6aE3ESlhRSpw' },
       application_fee_amount: platformFee,
       receipt_email: email,
       metadata: {
-        customer_name: fullName,
+        firstname,
+        lastname,
+        customer_name: `${firstname} ${lastname}`,
         email,
         address,
         zipcode,
@@ -56,15 +53,12 @@ app.post('/create-payment-intent-190', async (req, res) => {
   }
 });
 
-//
-// 🔶 Paiement accompagnement 4 séances – 600 €
-//
+// Paiement accompagnement 600 €
 app.post('/create-payment-intent-600', async (req, res) => {
   try {
     const { firstname, lastname, email, address, zipcode, city } = req.body;
-    const fullName = `${firstname} ${lastname}`;
 
-    const amount = 60000; // en centimes
+    const amount = 60000;
     const commissionPercent = 40;
     const platformFee = Math.round(amount * commissionPercent / 100);
 
@@ -73,13 +67,13 @@ app.post('/create-payment-intent-600', async (req, res) => {
       currency: 'eur',
       description: 'Accompagnement 4 séances – 600€ avec Lana',
       automatic_payment_methods: { enabled: true },
-      transfer_data: {
-        destination: 'acct_1RdG6aE3ESlhRSpw',
-      },
+      transfer_data: { destination: 'acct_1RdG6aE3ESlhRSpw' },
       application_fee_amount: platformFee,
       receipt_email: email,
       metadata: {
-        customer_name: fullName,
+        firstname,
+        lastname,
+        customer_name: `${firstname} ${lastname}`,
         email,
         address,
         zipcode,
@@ -95,8 +89,6 @@ app.post('/create-payment-intent-600', async (req, res) => {
   }
 });
 
-// Démarrage du serveur
+// Lancement du serveur
 const PORT = process.env.PORT || 4242;
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur en écoute sur le port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Serveur en écoute sur le port ${PORT}`));
