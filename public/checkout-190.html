@@ -67,15 +67,21 @@
 
   <div class="container">
     <form id="payment-form">
-      <input type="text" id="name" name="name" placeholder="Votre nom complet" required />
-      <input type="email" id="email" name="email" placeholder="Votre email" required />
+  <input type="text" id="firstname" name="firstname" placeholder="Votre prénom" required />
+  <input type="text" id="lastname" name="lastname" placeholder="Votre nom" required />
+  <input type="email" id="email" name="email" placeholder="Votre email" required />
 
-      <div id="payment-element-container">
-        <div id="payment-element"></div>
-      </div>
+  <div style="margin-top: 20px; font-weight: bold;">Adresse de facturation</div>
+  <input type="text" id="address" name="address" placeholder="Adresse" required />
+  <input type="text" id="zipcode" name="zipcode" placeholder="Code postal" required />
+  <input type="text" id="city" name="city" placeholder="Ville" required />
 
-      <button id="submit">Payer 190 €</button>
-    </form>
+  <div id="payment-element-container" style="margin-top: 20px;">
+    <div id="payment-element"></div>
+  </div>
+
+  <button id="submit">Payer 190 €</button>
+</form>
 <p class="waiting-message">Après la validation de votre paiement, patientez jusqu'à la page de confirmation où vous pourrez directement réserver votre séance.</p>
     <p>Paiement 100 % sécurisé via Stripe.<br>Vous recevrez un email de confirmation.</p>
   </div>
