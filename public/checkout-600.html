@@ -2,81 +2,81 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+  <title>Paiement sécurisé – 600 €</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Paiement sécurisé – Accompagnement 4 séances</title>
   <script src="https://js.stripe.com/v3/"></script>
-  <style>
-    body {
-      font-family: 'Source Sans Pro', sans-serif;
-      background-color: #fefeee;
-      color: #2e2e2e;
-      text-align: center;
-      padding: 40px 20px;
-    }
-    .container {
-      background: #fff;
-      padding: 40px 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
-      max-width: 500px;
-      margin: 40px auto;
-    }
-    #payment-form {
-      margin-top: 20px;
-    }
-    #payment-element-container {
-      display: none;
-      margin-top: 20px;
-    }
-    button {
-      background-color: #f39453;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      margin-top: 15px;
-    }
-    button:hover {
-      background-color: #d67b3c;
-    }
-    .logo {
-  max-height: 130px; /* un peu plus grand */
-  margin-bottom: 10px;
-}
-    .instructions {
-      font-style: italic;
-      margin-bottom: 20px;
-      color: #555;
-    }
-.waiting-message {
-  font-style: italic;
-  color: #777;
-  margin-top: 25px;
-  font-size: 1.0em;
-}
-  </style>
+ <style>
+  body {
+    font-family: 'Source Sans Pro', sans-serif;
+    background-color: #fefeee;
+    color: #2e2e2e;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .container {
+    background: #fff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+    max-width: 500px;
+    margin: 40px auto;
+  }
+  button {
+    background-color: #f39453;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 15px;
+  }
+  button:hover {
+    background-color: #d67b3c;
+  }
+  .logo {
+    max-height: 130px;
+    margin-bottom: 10px;
+  }
+  .instructions {
+    font-style: italic;
+    margin-bottom: 20px;
+    color: #555;
+  }
+  .waiting-message {
+    font-style: italic;
+    color: #777;
+    margin-top: 25px;
+    font-size: 1em;
+  }
+</style>
 </head>
 <body>
   <img src="https://evgrandiose.fr/wp-content/uploads/2025/07/LOGO-17.png" alt="Logo EV Grandiose" class="logo">
-  <p class="instructions">Merci de remplir votre nom complet et votre email, puis cliquez sur "Payer 600 €" pour saisir vos informations de paiement.</p>
+  <p class="instructions">Merci de remplir tous les champs, puis cliquez sur "Payer 600 €".</p>
   <h1>Paiement sécurisé</h1>
-  <p>Accompagnement 4 séances – 600 €</p>
+  <p>Accompagnement – 4 séances individuelles – 600 €</p>
 
   <div class="container">
     <form id="payment-form">
-      <input type="text" id="name" name="name" placeholder="Votre nom complet" required />
-      <input type="email" id="email" name="email" placeholder="Votre email" required />
+      <input type="text" id="firstname" placeholder="Votre prénom" required />
+      <input type="text" id="lastname" placeholder="Votre nom" required />
+      <input type="email" id="email" placeholder="Votre email" required />
 
-      <div id="payment-element-container">
+      <div style="margin-top: 20px; font-weight: bold;">Adresse de facturation</div>
+      <input type="text" id="address" placeholder="Adresse" required />
+      <input type="text" id="zipcode" placeholder="Code postal" required />
+      <input type="text" id="city" placeholder="Ville" required />
+
+      <div id="payment-element-container" style="margin-top: 20px;">
         <div id="payment-element"></div>
       </div>
 
       <button id="submit">Payer 600 €</button>
     </form>
-<p class="waiting-message">Après la validation de votre paiement, patientez jusqu'à la page de confirmation où vous pourrez directement réserver votre séance.</p>
+
+    <p class="waiting-message">Après le paiement, patientez jusqu’à la redirection pour réserver votre séance.</p>
     <p>Paiement 100 % sécurisé via Stripe.<br>Vous recevrez un email de confirmation.</p>
   </div>
 
@@ -92,20 +92,23 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      const name = document.getElementById("name").value.trim();
+      const firstname = document.getElementById("firstname").value.trim();
+      const lastname = document.getElementById("lastname").value.trim();
       const email = document.getElementById("email").value.trim();
+      const address = document.getElementById("address").value.trim();
+      const zipcode = document.getElementById("zipcode").value.trim();
+      const city = document.getElementById("city").value.trim();
 
-      if (!name || !email) {
-        alert("Merci de renseigner votre nom complet et votre email.");
+      if (!firstname || !lastname || !email || !address || !zipcode || !city) {
+        alert("Merci de remplir tous les champs.");
         return;
       }
 
       if (!paymentElementMounted) {
-        // Crée le PaymentIntent côté backend et récupère le clientSecret
         const response = await fetch("/create-payment-intent-600", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email }),
+          body: JSON.stringify({ firstname, lastname, email, address, zipcode, city })
         });
 
         if (!response.ok) {
@@ -114,29 +117,27 @@
         }
 
         const { clientSecret } = await response.json();
-
         elements = stripe.elements({ clientSecret });
         paymentElement = elements.create("payment", {
-  defaultValues: {
-    billingDetails: {
-      name: name,
-      email: email
-    },
-  },
-});
+          defaultValues: {
+            billingDetails: {
+              name: `${firstname} ${lastname}`,
+              email
+            }
+          }
+        });
         paymentElement.mount("#payment-element");
 
         paymentElementMounted = true;
         paymentContainer.style.display = "block";
-        return; // Laisse l’utilisateur saisir ses infos de paiement
+        return;
       }
 
-      // Confirme le paiement et déclenche la redirection automatique
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: "https://www.evgrandiose.fr/confirmation-accompagnement",
-        },
+          return_url: "https://www.evgrandiose.fr/confirmation-coaching"
+        }
       });
 
       if (error) alert(error.message);
