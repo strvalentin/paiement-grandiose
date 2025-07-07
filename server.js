@@ -50,6 +50,42 @@ app.post('/create-payment-intent-190', async (req, res) => {
   }
 });
 
+// Paiement 600€
+app.post('/create-payment-intent-600', async (req, res) => {
+  try {
+    const { firstname, lastname, email, address, zipcode, city } = req.body;
+
+    const fullName = `${firstname} ${lastname}`;
+    const amount = 60000;
+    const commissionPercent = 40;
+    const platformFee = Math.round(amount * commissionPercent / 100);
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'eur',
+      description: 'Accompagnement 4 séances – 600€ avec Lana',
+      automatic_payment_methods: { enabled: true },
+      transfer_data: { destination: 'acct_1RdG6aE3ESlhRSpw' },
+      application_fee_amount: platformFee,
+      receipt_email: email,
+      metadata: {
+        customer_name: fullName,
+        email,
+        address,
+        zipcode,
+        city
+      }
+    });
+
+    console.log('✅ PaymentIntent 600€ OK');
+    res.send({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    console.error('❌ Erreur PaymentIntent 600€ :', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // Port d'écoute
 const PORT = process.env.PORT || 4242;
 app.listen(PORT, () => console.log(`🚀 Serveur en écoute sur le port ${PORT}`));
