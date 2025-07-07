@@ -13,13 +13,13 @@ app.use(cors({
 
 app.use(express.json());
 
-// Sert tous les fichiers statiques dans public (checkout-190.html, checkout-600.html, etc)
+// Sert les fichiers HTML depuis /public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Paiement 190€
+// Paiement coaching 190 €
 app.post('/create-payment-intent-190', async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, address, zipcode, city } = req.body;
 
     const amount = 19000;
     const commissionPercent = 41;
@@ -33,7 +33,13 @@ app.post('/create-payment-intent-190', async (req, res) => {
       transfer_data: { destination: 'acct_1RdG6aE3ESlhRSpw' },
       application_fee_amount: platformFee,
       receipt_email: email,
-      metadata: { customer_name: name },
+      metadata: {
+        customer_name: name,
+        email,
+        address,
+        zipcode,
+        city,
+      },
     });
 
     console.log('✅ PaymentIntent 190€ OK');
@@ -44,33 +50,6 @@ app.post('/create-payment-intent-190', async (req, res) => {
   }
 });
 
-// Paiement 600€
-app.post('/create-payment-intent-600', async (req, res) => {
-  try {
-    const { name, email } = req.body;
-
-    const amount = 60000;
-    const commissionPercent = 41;
-    const platformFee = Math.round(amount * commissionPercent / 100);
-
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency: 'eur',
-      description: 'Accompagnement 4 séances – 600€',
-      automatic_payment_methods: { enabled: true },
-      transfer_data: { destination: 'acct_1RdG6aE3ESlhRSpw' },
-      application_fee_amount: platformFee,
-      receipt_email: email,
-      metadata: { customer_name: name },
-    });
-
-    console.log('✅ PaymentIntent 600€ OK');
-    res.send({ clientSecret: paymentIntent.client_secret });
-  } catch (error) {
-    console.error('❌ Erreur PaymentIntent 600€ :', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
+// Port d'écoute
 const PORT = process.env.PORT || 4242;
 app.listen(PORT, () => console.log(`🚀 Serveur en écoute sur le port ${PORT}`));
