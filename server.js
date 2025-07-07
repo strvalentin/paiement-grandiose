@@ -19,7 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Paiement coaching 190 €
 app.post('/create-payment-intent-190', async (req, res) => {
   try {
-    const { name, email, address, zipcode, city } = req.body;
+    const { firstname, lastname, email, address, zipcode, city } = req.body;
 
     const amount = 19000;
     const commissionPercent = 41;
